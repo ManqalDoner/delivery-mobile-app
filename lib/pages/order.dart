@@ -11,7 +11,11 @@ import "package:shared_preferences/shared_preferences.dart";
 orderDB(addressValue,order_name,counter_value,dishes_value) async{
     final prefs= await SharedPreferences.getInstance();
     final userID=prefs.getInt("id");
-   
+    final getDateTime=DateTime.now();
+
+    //section : it is about time and date at the Order 
+    final arrangeTime="${getDateTime.day}-${getDateTime.month}-${getDateTime.year}  ${getDateTime.hour}:${getDateTime.minute}";
+
     List<Map<String,dynamic>> SideDishesData=[];
 
     if(userID==null){
@@ -46,13 +50,17 @@ orderDB(addressValue,order_name,counter_value,dishes_value) async{
             .from("Order")
             .insert({
                 "user_id":userID,
-                 "count":counter_value[0],
+                "count":counter_value[0],
                 "name":order_name,
                 "order_address":addressValue,
+                "order_date":arrangeTime
+
             }).select().maybeSingle();
+
         if(OrderDB==null){
             return;
         }
+
         final orderID=OrderDB["order_id"];
         //to make OrderAndSidedishes map
         List<Map<String,dynamic>> orderAndSidedishesData=[];

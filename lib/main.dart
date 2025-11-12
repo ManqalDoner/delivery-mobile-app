@@ -16,10 +16,10 @@ import "package:flutter/services.dart";
 //subebase Db
 import "package:supabase_flutter/supabase_flutter.dart";
 
-import 'pages/closeApp.dart';
+import "package:delivery_app/pages/closeApp.dart";
 
-final String supebaseUrl="";
-final String supebaseKey="";
+final String supebaseUrl="https://gxkkcuayjovzvbsfhkoz.supabase.co";
+final String supebaseKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4a2tjdWF5am92enZic2Zoa296Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2NDUwMzksImV4cCI6MjA3NzIyMTAzOX0.W7IIqzWfuK_qMk67vPD6allqChe69TOlvE0ujPP_Wok";
 
 Future<void> main() async {
  await Supabase.initialize(
@@ -45,17 +45,15 @@ class MyApp extends StatelessWidget {
       
       initialRoute: "/",
       routes: {
-        "/":(context)=>Closeapp(child:NetworkServer(child: SplashScreen(),)),
-        "Register":(context)=>Closeapp(child:  NetworkServer(child: RegisterScreen())),
-        "Menu":(context)=>Closeapp(child:NetworkServer(child:MenuScreen())),
-        "OrderList":(context)=>Closeapp(child:  NetworkServer(child:Oerderlist())),
-        "Account":(context)=>Closeapp(child:  NetworkServer(child:AccountScreen()))
+        "/":(context)=>NetworkServer(child:  Closeapp(child:SplashScreen())),
+        "Register":(context)=>NetworkServer(child: RegisterScreen()),
+        "Menu":(context)=>NetworkServer(child:Closeapp(child:MenuScreen())),
+        "OrderList":(context)=>NetworkServer(child:Oerderlist()),
+        "Account":(context)=> NetworkServer(child:AccountScreen())
       },
       
       //home: Closeapp(child:NetworkServer(child:SplashScreen())),
-      
-      
-      
+       
     );
   }
 }
