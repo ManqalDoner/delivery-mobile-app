@@ -1,4 +1,4 @@
-import "package:delivery_app/pages/menu_screen.dart";
+import "package:delivery_app/FloatingNavigation.dart";
 import "package:delivery_app/widgets/_counterBtn.dart";
 import "package:flutter/material.dart";
 import "package:lottie/lottie.dart";
@@ -53,7 +53,8 @@ orderDB(addressValue,order_name,counter_value,dishes_value) async{
                 "count":counter_value[0],
                 "name":order_name,
                 "order_address":addressValue,
-                "order_date":arrangeTime
+                "order_date":arrangeTime,
+                "take_order":"Yeni Sifariş  "
 
             }).select().maybeSingle();
 
@@ -491,7 +492,7 @@ class _OrderPage extends State<OrderScreen>{
                             displayAlert(context);
                             Future.delayed(Duration(seconds: 1),(){
                                 orderDB(getText.text,widget.orderName, numberAdd,dishesName);
-                                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder:(context)=>MenuScreen()),
+                                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder:(context)=>NavigationPages()),
                                  (_)=>false
                                 );
                             });

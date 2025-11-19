@@ -1,4 +1,4 @@
-import "package:delivery_app/pages/menu_screen.dart";
+import "package:delivery_app/FloatingNavigation.dart";
 import "package:delivery_app/pages/register_screen.dart";
 import "package:flutter/material.dart";
 import 'package:lottie/lottie.dart';
@@ -46,7 +46,7 @@ class SplashScreen extends StatelessWidget{
       Future.delayed(const Duration(seconds: 2), () {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) =>MenuScreen()),
+          MaterialPageRoute(builder: (context) =>NavigationPages()),
           (_) => false,
         );
       });

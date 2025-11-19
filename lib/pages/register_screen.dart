@@ -1,7 +1,6 @@
-import "package:delivery_app/pages/account_screen.dart";
-import "package:delivery_app/pages/menu_screen.dart";
+
+import "package:delivery_app/FloatingNavigation.dart";
 import "package:flutter/material.dart";
-import "package:lottie/lottie.dart";
 import "dart:async";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:flutter/services.dart";
@@ -54,7 +53,7 @@ class _Register extends State<RegisterScreen>{
       print('User saved locally.');
       
     }
-    Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder:(context)=>MenuScreen()),(_)=>false);
+    Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder:(context)=>NavigationPages()),(_)=>false);
    
       
   }

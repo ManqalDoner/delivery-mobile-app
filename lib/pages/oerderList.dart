@@ -1,9 +1,13 @@
+import "package:delivery_app/notification_service.dart";
 import "package:delivery_app/widgets/_order_list_box.dart";
 import "package:flutter/material.dart";
-import "package:curved_navigation_bar/curved_navigation_bar.dart";
 import "package:lottie/lottie.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:supabase_flutter/supabase_flutter.dart";
+
+import 'dart:async';
+
+
 
 
 class Oerderlist extends StatefulWidget{
@@ -14,31 +18,31 @@ class _oerderlist extends State<Oerderlist>{
   bool displayText=false;
   List<String> orderName=[];
   List<int> orderCount=[];
-
+  int selectIndex=0;
 
   List<dynamic> image=[];
 
-
+  ScrollController scrollcontroller=ScrollController();
   //delet box
-  CancelBox(int index,name) async{
+  CancelBox(value) async{
     final prefs=await SharedPreferences.getInstance();
     final userID=prefs.getInt("id");
     if(userID==null){
         prefs.clear();
         return;
     }
-    if(name.isNotEmpty){
+    if(value.isNotEmpty){
         await Supabase.instance.client
       .from("Order")
       .delete()
       .eq("user_id",userID)
-      .eq("name", name[index])
+      .eq("name", value["name"])
       .select("order_id");
-    
+     NotificationService.showNotification(title: value["name"], body:"Sifarişiniz Silindi."); 
     }
     
   }
- Stream<List<Map<String,dynamic>>> getDataOnDB()async*{
+  Stream<List<Map<String,dynamic>>> getDataOnDB()async*{
     final prefs=await SharedPreferences.getInstance();
     final userID=prefs.getInt("id");
 
@@ -46,104 +50,53 @@ class _oerderlist extends State<Oerderlist>{
       prefs.clear();
       return;
     }
-
-    final getOrderID=await Supabase.instance.client
-      .from("Order")
-      .select("name,count")
-      .eq("user_id",userID);
-   
     
-    if(getOrderID.isNotEmpty){
-      orderName=List.generate(getOrderID.length, (index)=>getOrderID[index]["name"]);
-      orderCount=List.generate(getOrderID.length, (index)=>getOrderID[index]["count"]);
-      
-      
-      orderName.forEach((value){
-        switch (value){
-            case "Qızardılmış Toyuq":
-               image.add("shapes/menu/menu4.jpg");
+    final getOrderID=await Supabase.instance.client
+    .from("Order")
+    .stream(primaryKey: ["order_id"])
+    .eq("user_id",userID)
+    .order("order_id",ascending: false);
 
-            case "Lavaş Döner":
-               image.add("shapes/menu/menu3.jpg");
+    
+  
+    yield * getOrderID;
 
-            case "Limuzin Döner":
-              image.add("shapes/menu/menu1.jpg");
-
-            case "Yarım Tendir Döner":
-              image.add("shapes/menu/menu6.png");
-
-            case "Tendir Döner":
-              image.add("shapes/menu/menu5.jpg");
-
-            case "Qoşa Lavaş Döner":
-              image.add("shapes/menu/menu7.png");
-
-            case "Normal Döner":
-               image.add("shapes/menu/menu2.jpg");
-        };
-      
-      });
-     
-    }
-    yield getOrderID;
+    
+    
   }
   
+  
+
+
+  String getFoodImages(String name){
+    switch (name){
+      case "Qızardılmış Toyuq":
+        return "shapes/menu/menu4.jpg";
+
+      case "Lavaş Döner":
+        return "shapes/menu/menu3.jpg";
+
+      case "Limuzin Döner":
+        return "shapes/menu/menu1.jpg";
+
+      case "Yarım Tendir Döner":
+        return "shapes/menu/menu6.png";
+
+      case "Tendir Döner":
+        return "shapes/menu/menu5.jpg";
+
+      case "Qoşa Lavaş Döner":
+        return "shapes/menu/menu7.png";
+
+      case "Normal Döner":
+          return "shapes/menu/menu2.jpg";
+       default:
+        return "assets/food/default.jpg";
+    }
+  }
 
   Widget build(BuildContext context){
     return Scaffold(
-      appBar:AppBar(
-        toolbarHeight: 70,
-        backgroundColor: Colors.amber,
-        title: Container(
-          margin: EdgeInsets.only(top: 5),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image(
-                width: 60,
-                height: 60,
-                image: AssetImage("shapes/logo/logo.png"),
-              ),
-              Text(
-                "Manqal Döner",
-                style: TextStyle(
-                  fontFamily: "Metropolis",
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black.withValues(alpha: 0.7)),
-                  textAlign: TextAlign.start,
-              ),
-            ],
-          ),
-        ),
-      ),
-       //Section: Bottom Nav bart
-      bottomNavigationBar:SafeArea(
-        child: CurvedNavigationBar(
-          height: 50,
-          index: 0,
-          animationDuration: Duration(milliseconds:200),
-          backgroundColor: Colors.amber,
-          buttonBackgroundColor: Colors.white12.withValues(alpha: 0.7),
-          animationCurve: Curves.bounceInOut,
-          items:<Widget> [
-            Icon(Icons.shopping_basket_outlined,size: 45,),
-            Icon(Icons.home,size: 45,),
-            Icon(Icons.account_circle_sharp,size: 45,)
-          ],
-          onTap: (index){
-           setState(() {
-                switch(index){
-                  case 1:
-                    Navigator.pushReplacementNamed(context, "Menu");
-                  case 2:
-                    Navigator.pushReplacementNamed(context, "Account");
-                  
-                }
-             });
-          },
-        ),
-      ),
       body: StreamBuilder(
         stream: getDataOnDB(),
         builder: (context, snapshot) {
@@ -176,25 +129,41 @@ class _oerderlist extends State<Oerderlist>{
             );
           }
           final getOrder=snapshot.data!;
+
+          WidgetsBinding.instance.addPostFrameCallback((_){
+            if(scrollcontroller.hasClients){
+                scrollcontroller.animateTo(
+                    0.0,
+                    duration: const Duration(milliseconds: 500),
+                    curve:Curves.linear
+                );
+            }
+            
+          });
+          
           if(getOrder.isNotEmpty){
-            return GridView.builder(
-                itemCount: orderName.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount:1,childAspectRatio: 2.1),
+            return ListView.builder(
+                itemCount: getOrder.length,
+                controller: scrollcontroller,
                 itemBuilder: (context,index){
-                if(image.isNotEmpty){
-                    return CustomeBox(
-                    orderImg: image[index],
-                    orderName: orderName[index],
-                    orderCount: orderCount[index].toString(),
+                  final getData=getOrder[getOrder.length-1-index];
+                  if(getData["take_order"]=="Alındı"){
+                     
+                    NotificationService.showNotification(title: getData["name"], body:"Sifarişiniz qəbul edildi.\n Sifarişiniz yaxın zamanda çatdırılacaq.");      
+
+                  }
+                  return CustomeBox(
+                    orderImg: getFoodImages(getData["name"]),
+                    orderName: getData["name"],
+                    orderCount: getData["count"].toString(),
+                    takeOrder: getData["take_order"]=="Alındı"? "Alındı":"",
                     OnPressed:(){
                         setState(() {
-                          CancelBox(index,orderName);
+                          CancelBox(getData);
                         });
                     },
-                );
-                }else {
-                    return Text("");
-                }
+                  );
+                
                 
                 },
             );

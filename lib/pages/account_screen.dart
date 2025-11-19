@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:curved_navigation_bar/curved_navigation_bar.dart";
 import "package:flutter/services.dart";
 import "dart:math";
 import "package:shared_preferences/shared_preferences.dart";
@@ -100,32 +99,6 @@ class _accountscreen extends State<AccountScreen>{
   Widget build(BuildContext context){
     return Scaffold (
       //Section: Bottom Nav bart
-      bottomNavigationBar:SafeArea(
-        child: CurvedNavigationBar(
-          height: 50,
-          index: 2,
-          animationDuration: Duration(milliseconds:200),
-          backgroundColor: Colors.amber,
-          buttonBackgroundColor: Colors.white12.withValues(alpha: 0.7),
-          animationCurve: Curves.bounceInOut,
-          items:<Widget> [
-            Icon(Icons.shopping_basket_outlined,size: 45,),
-            Icon(Icons.home,size: 45,),
-            Icon(Icons.account_circle_sharp,size: 45,)
-          ],
-          onTap: (index){
-              setState(() {
-                switch(index){
-                  case 0:
-                    Navigator.pushReplacementNamed(context, "OrderList");
-                  case 1:
-                    Navigator.pushReplacementNamed(context, "Menu");
-                  
-                }
-              });
-          },
-        ),
-      ),
       body:StreamBuilder (
         stream:ShareData(),
         builder: (context, snapshot) {
