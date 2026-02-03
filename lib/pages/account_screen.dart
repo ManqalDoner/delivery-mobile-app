@@ -1,8 +1,9 @@
+import "dart:io";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
-import "dart:math";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:supabase_flutter/supabase_flutter.dart";
+import "package:image_picker/image_picker.dart";
 
 class AccountScreen extends StatefulWidget{
   State<StatefulWidget> createState()=>_accountscreen();
@@ -11,28 +12,16 @@ class AccountScreen extends StatefulWidget{
 class _accountscreen extends State<AccountScreen>{
   // the data change and save 
   bool onOff=true;
-
   bool onBtn=false;
   
-  final random=Random();
-  
-  int nextShape=0;
   // data process
   List<TextEditingController> _accountData=List.generate(2,(_)=>TextEditingController());
   String Username="";
   // Error valid
   String? Error_tel,Error_address;
-  // profile image
-  List<String> ProfileShape=[
-    "shapes/profile/account.jpg",
-    "shapes/profile/account2.jpg",
-    "shapes/profile/account3.jpg",
-    "shapes/profile/account4.jpg",
-    "shapes/profile/account5.jpg",
-    "shapes/profile/account6.jpg",
-  ];
-  // change profile image
-  
+  //image path from gallery
+  File? _image;
+
   void initState(){
     super.initState();
     _accountData.forEach((action){
@@ -46,7 +35,6 @@ class _accountscreen extends State<AccountScreen>{
         }
       });
     });
-    nextShape=random.nextInt(ProfileShape.length-1);
     
   }
   //this function: the User data for the display at Account page
@@ -70,7 +58,7 @@ class _accountscreen extends State<AccountScreen>{
   upgradeData(value) async{
     final prefs = await SharedPreferences.getInstance();    
     final userId = prefs.getInt('id'); 
-
+    
     if(userId==null){
       prefs.clear();
       return;
@@ -80,11 +68,11 @@ class _accountscreen extends State<AccountScreen>{
       .upsert({
         "user_id":userId,
         "Tel":value[0].text,
-        "Address":value[1].text
+        "Address":value[1].text,
       })
       .eq("user_id",userId)
       .select();
-      
+    
     }else{
       if(value[0].text.isEmpty){
         Error_tel="Nömüre yeri boşdur.";
@@ -93,6 +81,32 @@ class _accountscreen extends State<AccountScreen>{
         Error_address="Ünvan yeri boşdur.";
       }
     }
+    
+  }
+  // add picture from gallery or camera
+  // and then this picture paht save to DB server 
+  _imageFromGallery() async{
+    final prefs = await SharedPreferences.getInstance();    
+    final userId = prefs.getInt('id'); 
+    if(userId==null){
+      prefs.clear();
+      return;
+    }
+
+    final XFile? pickedImage=await ImagePicker()
+     .pickImage(source: ImageSource.gallery,imageQuality: 100);
+
+    if(pickedImage==null) return;
+    
+    final String imgPath=pickedImage.path;// string path
+    
+    //The user allways can change profile image and  
+    //therefore user_img will be update property  
+    await Supabase.instance.client.from("User")
+    .update({
+      "user_img":imgPath.toString()
+    })
+    .eq("user_id",userId);
     
   }
 
@@ -109,11 +123,18 @@ class _accountscreen extends State<AccountScreen>{
             
           };
           final account=snapshot.data!;
-          if(!onBtn){
-            if(account.isNotEmpty){
-                Username=account[0]["Username"];
-                _accountData[0].text=account[0]["Tel"];
-                _accountData[1].text=account[0]["Address"];
+          if(account.isNotEmpty){
+
+            // to get image path from DB and insert 
+            if(account[0]["user_img"]!=null){
+              _image=File(account[0]["user_img"]);
+            }
+            if(!onBtn){
+              
+              Username=account[0]["Username"];
+              _accountData[0].text=account[0]["Tel"];
+              _accountData[1].text=account[0]["Address"];
+        
             }
           }
            
@@ -126,9 +147,15 @@ class _accountscreen extends State<AccountScreen>{
                 child: Column(
 
                 children: [
-                  CircleAvatar(
-                    radius: 100,
-                    backgroundImage: AssetImage(ProfileShape[nextShape]),
+                  //take picture from gallery 
+                  GestureDetector(
+                    onTap: _imageFromGallery,
+                    
+                    child: CircleAvatar(
+                      radius: _image!=null? 100:50,
+                      backgroundImage: _image!=null? FileImage(_image!): null,child: _image==null ?
+                        Icon(Icons.person,size: 40,color: Colors.grey,):null,
+                    ) ,
                   ),
                   //Username
                   Padding(
@@ -160,7 +187,6 @@ class _accountscreen extends State<AccountScreen>{
                   //tel and address box      
                   CustomBox(),
                      
-                  
                 ],
               ),
               )

@@ -12,8 +12,8 @@ import "package:flutter/services.dart";
 import "package:supabase_flutter/supabase_flutter.dart";
 
 
-final String supebaseUrl="***********";
-final String supebaseKey="************";
+final String supebaseUrl="https://gxkkcuayjovzvbsfhkoz.supabase.co";
+final String supebaseKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4a2tjdWF5am92enZic2Zoa296Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2NDUwMzksImV4cCI6MjA3NzIyMTAzOX0.W7IIqzWfuK_qMk67vPD6allqChe69TOlvE0ujPP_Wok";
 
 main() async {
  await Supabase.initialize(
